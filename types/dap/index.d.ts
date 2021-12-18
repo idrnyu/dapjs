@@ -49,6 +49,19 @@ export interface DAP {
      */
     writeAP(register: number, value: number): Promise<void>;
     /**
+     * Read an 8-bit word from a memory access port register
+     * @param register ID of register to read
+     * @returns Promise of register data
+     */
+    readMem8(register: number): Promise<number>;
+    /**
+     * Write an 8-bit word to a memory access port register
+     * @param register ID of register to write to
+     * @param value The value to write
+     * @returns Promise
+     */
+    writeMem8(register: number, value: number): Promise<void>;
+    /**
      * Read a 16-bit word from a memory access port register
      * @param register ID of register to read
      * @returns Promise of register data
@@ -89,5 +102,5 @@ export interface DAP {
      */
     writeBlock(register: number, values: Uint32Array): Promise<void>;
 }
-export * from "./adi";
-export * from "./enums";
+export * from './adi';
+export * from './enums';

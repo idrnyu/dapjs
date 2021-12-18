@@ -1,6 +1,6 @@
 # DAP.js
 
-[![Circle CI](https://circleci.com/gh/ARMmbed/dapjs.svg?style=shield&circle-token=d37ef109d0134f6f8e4eb12a65214a8b159f77d8)](https://circleci.com/gh/ARMmbed/dapjs/)
+[![Build Status](https://github.com/ARMmbed/dapjs/workflows/ci/badge.svg)](https://github.com/ARMmbed/dapjs/actions)
 [![npm](https://img.shields.io/npm/dm/dapjs.svg)](https://www.npmjs.com/package/dapjs)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://spdx.org/licenses/MIT.html)
 
@@ -8,7 +8,7 @@ DAP.js is a JavaScript interface to [CMSIS-DAP](https://www.keil.com/pack/doc/CM
 
 ## Prerequisites
 
-[Node.js > v6.15.0](https://nodejs.org), which includes `npm`
+[Node.js > v8.14.0](https://nodejs.org), which includes `npm`
 
 ## Installation
 
@@ -22,9 +22,9 @@ $ npm install dapjs
 
 Decide on a transport layer to use (see below) and refer to the [examples folder](https://github.com/ARMmbed/dapjs/tree/master/examples/) to get started.
 
-The web example can be seen running at:
+The web examples can be seen running at:
 
-https://armmbed.github.io/dapjs/examples/daplink-flash/web.html
+https://armmbed.github.io/dapjs/examples/index.html
 
 Refer to the [DAPjs API Documentation](https://armmbed.github.io/dapjs/) for more information.
 
@@ -88,28 +88,26 @@ In the browser, require the library:
 In Node.js Require the libraries:
 
 ```javascript
-const usb = require("webusb").usb;
-const DAPjs = require("dapjs");
+const usb = require('webusb').usb;
+const DAPjs = require('dapjs');
 ```
 
 Then in either environment:
 
 ```javascript
-<navigator>.usb.requestDevice({
+const device = await <navigator>.usb.requestDevice({
     filters: [{vendorId: 0xD28}]
-})
-.then(device => {
-    const transport = new DAPjs.WebUSB(device);
-    const daplink = new DAPjs.DAPLink(transport);
-
-    return daplink.connect()
-    .then(() => daplink.disconnect())
-    .then(() => process.exit());
-})
-.catch(error => {
-    console.error(error.message || error);
-    process.exit();
 });
+
+const transport = new DAPjs.WebUSB(device);
+const daplink = new DAPjs.DAPLink(transport);
+
+try {
+    await daplink.connect();
+    await daplink.disconnect();
+} catch(error) {
+    console.error(error.message || error);
+}
 ```
 
 #### Pros
@@ -130,22 +128,22 @@ $ npm install node-hid
 #### Example
 
 ```javascript
-const hid = require("node-hid");
-const DAPjs = require("dapjs");
+const hid = require('node-hid');
+const DAPjs = require('dapjs');
 
 let devices = hid.devices();
 devices = devices.filter(device => device.vendorId === 0xD28);
 
-const transport = new DAPjs.HID(devices[0]);
+const device = new hid.HID(devices[0].path);
+const transport = new DAPjs.HID(device);
 const daplink = new DAPjs.DAPLink(transport);
 
-daplink.connect()
-.then(() => daplink.disconnect())
-.then(() => process.exit())
-.catch(error => {
+try {
+    await daplink.connect();
+    await daplink.disconnect();
+} catch(error) {
     console.error(error.message || error);
-    process.exit();
-});
+}
 ```
 
 #### Pros
@@ -166,8 +164,8 @@ $ npm install usb
 #### Example
 
 ```javascript
-const usb = require("usb");
-const DAPjs = require("dapjs");
+const usb = require('usb');
+const DAPjs = require('dapjs');
 
 let devices = usb.getDeviceList();
 devices = devices.filter(device => device.deviceDescriptor.idVendor === 0xD28);
@@ -175,13 +173,12 @@ devices = devices.filter(device => device.deviceDescriptor.idVendor === 0xD28);
 const transport = new DAPjs.USB(devices[0]);
 const daplink = new DAPjs.DAPLink(transport);
 
-daplink.connect()
-.then(() => daplink.disconnect())
-.then(() => process.exit())
-.catch(error => {
+try {
+    await daplink.connect();
+    await daplink.disconnect();
+} catch(error) {
     console.error(error.message || error);
-    process.exit();
-});
+}
 ```
 
 #### Pros
@@ -279,6 +276,8 @@ The `DAP` (Debug Access Port) layer exposes low-level access to ports, registers
 - [x] writeDP()
 - [x] readAP()
 - [x] writeAP()
+- [x] readMem8()
+- [x] writeMem8()
 - [x] readMem16()
 - [x] writeMem16()
 - [x] readMem32()

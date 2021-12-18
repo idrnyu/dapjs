@@ -1,8 +1,8 @@
-import { Transport } from "../transport";
-import { Proxy, DAPOperation } from "../proxy";
-import { DPRegister, APRegister } from "./enums";
-import { DAP } from "./";
-import { DAPProtocol } from "../proxy/enums";
+import { Transport } from '../transport';
+import { Proxy, DAPOperation } from '../proxy';
+import { DPRegister, APRegister } from './enums';
+import { DAP } from './';
+import { DAPProtocol } from '../proxy/enums';
 /**
  * Arm Debug Interface class
  */
@@ -22,20 +22,21 @@ export declare class ADI implements DAP {
      * @param proxy Proxy to use
      */
     constructor(proxy: Proxy);
-    protected delay(timeout: number): Promise<void>;
     /**
      * Continually run a function until it returns true
      * @param fn The function to run
+     * @param timeout Optional timeout to wait before giving up and throwing
      * @param timer The milliseconds to wait between each run
-     * @param timeout Optional timeout to wait before giving up and rejecting
      * @returns Promise
      */
-    protected waitDelay(fn: () => Promise<boolean>, timer?: number, timeout?: number): Promise<void>;
+    protected waitDelay(fn: () => Promise<boolean>, timeout?: number, timer?: number): Promise<void>;
     protected concatTypedArray(arrays: Uint32Array[]): Uint32Array;
     protected readDPCommand(register: number): DAPOperation[];
     protected writeDPCommand(register: number, value: number): DAPOperation[];
     protected readAPCommand(register: number): DAPOperation[];
     protected writeAPCommand(register: number, value: number): DAPOperation[];
+    protected readMem8Command(register: number): DAPOperation[];
+    protected writeMem8Command(register: number, value: number): DAPOperation[];
     protected readMem16Command(register: number): DAPOperation[];
     protected writeMem16Command(register: number, value: number): DAPOperation[];
     protected readMem32Command(register: number): DAPOperation[];
@@ -88,6 +89,19 @@ export declare class ADI implements DAP {
      */
     writeAP(register: APRegister, value: number): Promise<void>;
     /**
+     * Read an 8-bit word from a memory access port register
+     * @param register ID of register to read
+     * @returns Promise of register data
+     */
+    readMem8(register: number): Promise<number>;
+    /**
+     * Write an 8-bit word to a memory access port register
+     * @param register ID of register to write to
+     * @param value The value to write
+     * @returns Promise
+     */
+    writeMem8(register: number, value: number): Promise<void>;
+    /**
      * Read a 16-bit word from a memory access port register
      * @param register ID of register to read
      * @returns Promise of register data
@@ -113,6 +127,20 @@ export declare class ADI implements DAP {
      * @returns Promise
      */
     writeMem32(register: number, value: number): Promise<void>;
+    /**
+     * Read a sequence of 32-bit words from a memory access port register, without crossing TAR auto-increment boundaries
+     * @param register ID of register to read from
+     * @param count The count of values to read
+     * @returns Promise of register data
+     */
+    protected readMem32Sequence(register: number, count: number): Promise<Uint32Array>;
+    /**
+     * Write a sequence of 32-bit words to a memory access port register, without crossing TAR auto-increment boundaries
+     * @param register ID of register to write to
+     * @param values The values to write
+     * @returns Promise
+     */
+    protected writeMem32Sequence(register: number, values: Uint32Array): Promise<void>;
     /**
      * Read a block of 32-bit words from a memory access port register
      * @param register ID of register to read from

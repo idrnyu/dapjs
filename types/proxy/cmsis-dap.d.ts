@@ -1,8 +1,8 @@
 /// <reference types="node" />
-import { EventEmitter } from "events";
-import { Transport } from "../transport";
-import { DAPPort, DAPTransferMode, DAPProtocol, DAPInfoRequest } from "./enums";
-import { Proxy, DAPOperation } from "./";
+import { EventEmitter } from 'events';
+import { Transport } from '../transport';
+import { DAPPort, DAPTransferMode, DAPProtocol, DAPInfoRequest } from './enums';
+import { Proxy, DAPOperation } from './';
 /**
  * @hidden
  */
@@ -16,6 +16,10 @@ export declare class CmsisDAP extends EventEmitter implements Proxy {
     private mode;
     private clockFrequency;
     /**
+     * Whether the device has been opened
+     */
+    connected: boolean;
+    /**
      * The maximum DAPOperations which can be transferred
      */
     operationCount: number;
@@ -23,6 +27,7 @@ export declare class CmsisDAP extends EventEmitter implements Proxy {
      * The maximum block size which can be transferred
      */
     blockSize: number;
+    private sendMutex;
     /**
      * CMSIS-DAP constructor
      * @param transport Debug transport to use
@@ -30,7 +35,6 @@ export declare class CmsisDAP extends EventEmitter implements Proxy {
      * @param clockFrequency Communication clock frequency to use (default 10000000)
      */
     constructor(transport: Transport, mode?: DAPProtocol, clockFrequency?: number);
-    private delay;
     private bufferSourceToUint8Array;
     /**
      * Switches the CMSIS-DAP unit to use SWD
@@ -45,6 +49,11 @@ export declare class CmsisDAP extends EventEmitter implements Proxy {
      */
     protected send(command: number, data?: BufferSource): Promise<DataView>;
     /**
+     * Clears the abort register of all error flags
+     * @param abortMask Optional AbortMask to use, otherwise clears all flags
+     */
+    protected clearAbort(abortMask?: number): Promise<void>;
+    /**
      * Get DAP information
      * @param request Type of information to get
      * @returns Promise of number or string
@@ -56,7 +65,30 @@ export declare class CmsisDAP extends EventEmitter implements Proxy {
      * @param sequence The sequence to send
      * @returns Promise
      */
-    swjSequence(sequence: BufferSource): Promise<void>;
+    swjSequence(sequence: BufferSource, bitLength?: number): Promise<void>;
+    /**
+     * Send an SWJ Clock value
+     * https://www.keil.com/pack/doc/CMSIS/DAP/html/group__DAP__SWJ__Clock.html
+     * @param clock The SWJ clock value to send
+     * @returns Promise
+     */
+    swjClock(clock: number): Promise<void>;
+    /**
+     * Read/Write SWJ Pins
+     * https://www.keil.com/pack/doc/CMSIS/DAP/html/group__DAP__SWJ__Pins.html
+     * @param pinsOut Pin values to write
+     * @param pinSelect Maske to select output pins to change
+     * @param pinWait Time in microseconds to wait for output pin value to stabilize (0 - no wait, 1..3000000)
+     * @returns Promise
+     */
+    swjPins(pinsOut: number, pinSelect: number, pinWait: number): Promise<number>;
+    /**
+     * Send Delay Command
+     * https://www.keil.com/pack/doc/CMSIS/DAP/html/group__DAP__Delay.html
+     * @param delay Time to delay in microseconds
+     * @returns Promise
+     */
+    dapDelay(delay: number): Promise<void>;
     /**
      * Configure Transfer
      * https://www.keil.com/pack/doc/CMSIS/DAP/html/group__DAP__TransferConfigure.html
